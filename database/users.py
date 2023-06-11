@@ -47,81 +47,71 @@ class UsersDB:
                 self.logger.debug(f'Пользователь уже создан. id пользователя:{user_id}')
                 return False
 
-            self.db[str(user_id)] = {}
+            self.db[str(user_id)] = [False, []]
             self.__dump_db()
             return True
         except Exception as e:
             self.logger.error(f'Не удалось сохранить пользователя. id пользователя:{user_id}', e)
             return False
 
-    def get_list(self, user_id: int):
+    def check_prime(self, user_id: int):
         self.logger.debug(
-            f'Запрос на получение списка. id пользователя:{user_id}')
+            f'Запрос на проверку подписки на бота. id пользователя:{user_id}')
 
         try:
             if not self.__check_user(user_id):
                 self.logger.debug(f'Пользователь не найден. id пользователя:{user_id}')
                 self.add_user(user_id)
 
-            return self.db[str(user_id)]
+            return self.db[str(user_id)][0]
         except Exception as e:
             self.logger.error(
-                f'Не удалось получить список. id пользователя:{user_id}', e)
+                f'Не удалось проверить подписку. id пользователя:{user_id}', e)
             return {}
 
-    def add_link(self, user_id: int, link: str, name: str):
-        self.logger.debug(f'Добавление ссылки. id пользователя:{user_id}, ссылка:{link}, имя:{name}')
+    def set_prime(self, user_id: int):
+        self.logger.debug(f'Добавление подписки. id пользователя:{user_id}')
 
         try:
             if not self.__check_user(user_id):
                 self.logger.debug(f'Пользователь не найден. id пользователя:{user_id}')
                 self.add_user(user_id)
 
-            if name in self.db[str(user_id)]:
-                return False, 'Название совпадает с уже добавленной ссылкой'
-
-            self.db[str(user_id)][name] = link
+            self.db[str(user_id)][0] = True
             self.__dump_db()
             return True, ''
         except Exception as e:
-            self.logger.error(f'Не удалось сохранить ссылку. id пользователя:{user_id}, ссылка:{link}, имя:{name}', e)
+            self.logger.error(f'Не удалось добавить подписку. id пользователя:{user_id}', e)
             return False, ''
 
-    def check_link(self, user_id: int, name: str):
-        res = name in self.db[str(user_id)]
-        self.logger.debug(f'Проверка ссылки в базе данных. результат:{res}')
-        return res
-
-    def remove_link(self, user_id: int, name: str):
-        self.logger.debug(f'Удаление ссылки. id пользователя:{user_id}, имя:{name}')
+    def add_webinar(self, user_id: int, webinar_id: str):
+        self.logger.debug(f'Добавление вебинара в пользователя. id пользователя:{user_id}')
 
         try:
             if not self.__check_user(user_id):
                 self.logger.debug(f'Пользователь не найден. id пользователя:{user_id}')
                 self.add_user(user_id)
-            if not self.check_link(user_id, name):
-                self.logger.debug(f'Ссылка не найдена не найдена. id пользователя:{user_id}, имя:{name}')
+            if webinar_id in self.db[str(user_id)][1]:
+                self.logger.debug(f'Вебинар уже добавлен. id пользователя:{user_id}')
                 return False
 
-            del self.db[str(user_id)][name]
+            self.db[str(user_id)][1].append(webinar_id)
             self.__dump_db()
             return True
         except Exception as e:
-            self.logger.error(f'Не удалось удалить ссылку. id пользователя:{user_id}, имя:{name}', e)
+            self.logger.error(f'Не удалось добавить вебинар'
+                              f'. id пользователя:{user_id}', e)
             return False
 
-    def remove_all(self, user_id: int):
-        self.logger.debug(f'Удаление всех ссылок. id пользователя:{user_id}')
+    def get_webinars_id(self, user_id: int):
+        self.logger.debug(f'Получения вебинаров пользователя. id пользователя:{user_id}')
 
         try:
             if not self.__check_user(user_id):
                 self.logger.debug(f'Пользователь не найден. id пользователя:{user_id}')
                 self.add_user(user_id)
-                return True
 
-            self.db[str(user_id)] = {}
-            self.__dump_db()
-            return True
+            return self.db[str(user_id)][1]
         except Exception as e:
-            self.logger.error(f'Не удалось все ссылки. id пользователя:{user_id}', e)
+            self.logger.error(f'Не удалось получить вебинары. id пользователя:{user_id}', e)
             return False

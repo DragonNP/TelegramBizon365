@@ -2,9 +2,16 @@ import requests
 import json
 from Bizon.initData import InitData
 from Bizon.room import Room
+from Bizon.webinar import Webinar
 
 
 class Bizon:
+    def get_webinar(self, url):
+        room = self.get_room(url)
+        webinar = Webinar()
+        webinar.create(room)
+        return webinar
+
     def get_room(self, url):
         url = url.split('?')[0]
 
