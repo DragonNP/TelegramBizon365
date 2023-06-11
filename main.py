@@ -22,7 +22,7 @@ users = UsersDB()
 webinars = Webinars()
 
 
-def reformat_webinar(webinar: Webinar, prime=False):
+def reformat_webinar(webinar: Webinar, prime=False, user_id: str = ''):
     text = f'*{webinar.title}*\n\n'
     if prime:
         text += f'''*Автор:* {webinar.author}
@@ -30,13 +30,12 @@ def reformat_webinar(webinar: Webinar, prime=False):
 *Cсылка:* {webinar.url}'''
     else:
         text += 'Доступ к полной информации о вебинаре вы можете купить у техподдержки:' \
-                ' телеграм t.me/dragon\_np или почта dragonnp@yandex.ru'
+                f' телеграм t.me/dragon\_np или почта dragonnp@yandex.ru, не забудьте указать данный код: {user_id}'
     return text
 
 
 def get_keyboard_my_webinars():
     keyboard = [['Добавленные вебинары']]
-
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
     return reply_markup
 
@@ -84,7 +83,7 @@ def extract(update: Update, _: CallbackContext):
 
     prime = users.check_prime(user_id)
 
-    text = reformat_webinar(webinar, prime)
+    text = reformat_webinar(webinar, prime, user_id=user_id)
     users.add_webinar(user_id, webinar.id)
     update.message.reply_text(text,
                               parse_mode=telegram.ParseMode.MARKDOWN, disable_web_page_preview=True,
@@ -106,7 +105,7 @@ def send_my_webs(update: Update, _: CallbackContext):
 
     for id in webs_id:
         webinar = webinars.get(id)
-        text = reformat_webinar(webinar, prime)
+        text = reformat_webinar(webinar, prime, user_id=user_id)
         update.message.reply_text(text,
                                   parse_mode=telegram.ParseMode.MARKDOWN, disable_web_page_preview=True,
                                   reply_markup=get_keyboard_webinar(id, prime))
@@ -126,7 +125,7 @@ def show_files(update: Update, _: CallbackContext) -> None:
 
     webinar = webinars.get(query.data.replace('show_files_', ''))
 
-    text = reformat_webinar(webinar, prime=True) + '\n\n'
+    text = reformat_webinar(webinar, prime=True, user_id=user_id) + '\n\n'
     text += 'Файлы:\n'
     for name in webinar.files:
         text += f'   - [{name}]({webinar.files[name]})\n'
@@ -158,7 +157,7 @@ def show_music(update: Update, _: CallbackContext) -> None:
 
     webinar = webinars.get(query.data.replace('show_music_', ''))
 
-    text = reformat_webinar(webinar, prime=True) + '\n\n'
+    text = reformat_webinar(webinar, prime=True, user_id=user_id) + '\n\n'
     if not add_files_btn:
         text += 'Файлы:\n'
         for name in webinar.files:
@@ -222,6 +221,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler('help', send_start_msg))
     dispatcher.add_handler(CommandHandler('add_prime', add_prime))
     dispatcher.add_handler(MessageHandler(Filters.text('Добавленные вебинары'), send_my_webs))
+    dispatcher.add_handler(MessageHandler(Filters.text('Купить полный доступ'), buy_full_access))
     dispatcher.add_handler(MessageHandler(Filters.text, extract))
     dispatcher.add_handler(CallbackQueryHandler(route_callback))
     dispatcher.add_error_handler(error_callback)
