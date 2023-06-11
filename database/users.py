@@ -79,10 +79,10 @@ class UsersDB:
 
             self.db[str(user_id)][0] = True
             self.__dump_db()
-            return True, ''
+            return True
         except Exception as e:
             self.logger.error(f'Не удалось добавить подписку. id пользователя:{user_id}', e)
-            return False, ''
+            return False
 
     def add_webinar(self, user_id: int, webinar_id: str):
         self.logger.debug(f'Добавление вебинара в пользователя. id пользователя:{user_id}')

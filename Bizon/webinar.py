@@ -19,7 +19,6 @@ class Webinar:
         self.title = room.title
         self.date = datetime.strptime(room.date, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%H:%M %m.%d.%y')
         self.url = room.hangoutsUrl
-        self.is_online = room.is_online
         self.author = room.author
         self.files = room.files
         self.music = room.music
@@ -29,7 +28,6 @@ class Webinar:
         self.title = web['title']
         self.date = web['date']
         self.url = web['url']
-        self.is_online = web['is_online']
         self.author = web['author']
         self.files = web['files']
         self.music = web['music']
@@ -40,7 +38,6 @@ class Webinar:
             'title': self.title,
             'date': self.date,
             'url': self.url,
-            'is_online': self.is_online,
             'author': self.author,
             'files': self.files,
             'music': self.music,
