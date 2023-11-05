@@ -70,7 +70,10 @@ def extract(update: Update, _: CallbackContext):
     url = update.message.text
 
     url_id = str(url.split('/')[4])
-    url_number = str(url.split('/')[5]).split('?')[0]
+    if len(url.split('/')) > 5:
+        url_number = str(url.split('/')[5]).split('?')[0]
+    else:
+        url_number = ''
     webinar_id = url_id + ':' + url_number
 
     logger.info(f'Извлечение данных вебирана. пользователь:{user_id}')
@@ -221,7 +224,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler('help', send_start_msg))
     dispatcher.add_handler(CommandHandler('add_prime', add_prime))
     dispatcher.add_handler(MessageHandler(Filters.text('Добавленные вебинары'), send_my_webs))
-    dispatcher.add_handler(MessageHandler(Filters.text('Купить полный доступ'), buy_full_access))
+    # dispatcher.add_handler(MessageHandler(Filters.text('Купить полный доступ'), buy_full_access))
     dispatcher.add_handler(MessageHandler(Filters.text, extract))
     dispatcher.add_handler(CallbackQueryHandler(route_callback))
     dispatcher.add_error_handler(error_callback)

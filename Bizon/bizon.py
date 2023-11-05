@@ -16,7 +16,6 @@ class Bizon:
         url = url.split('?')[0]
 
         sid = self.get_sid(url)
-
         init_data: InitData = self.load_init_data(url, sid)
         sid_special = self.get_sid_for_link(sid, init_data)
         room: Room = self.get_ws5_bizon(init_data, sid_special)
@@ -32,14 +31,15 @@ class Bizon:
                 "email": "dsf@ya.ru",
                 "phone": "+71234567890",
                 "custom1": "test",
-                "referer": "test",
+                "referer": url,
                 "param1": "test",
                 "param2": "test",
                 "param3": "test",
                 "cu1": "test",
                 "sup": "test"}
 
-        x = requests.post(url_authorize, data=body, headers={'host': 'start.bizon365.ru'})
+        x = requests.post(url_authorize, data=body, headers={'host': url.split('/')[2],
+                                                             'X-Requested-With': 'XMLHttpRequest'})
 
         if x.text != '{}':
             print('get_sid, error!!')
@@ -48,11 +48,11 @@ class Bizon:
             if key == 'sid':
                 return x.cookies[key]
 
-    def load_init_data(self, url, sid, ):
+    def load_init_data(self, url, sid):
         url_load_init_data = url + "/loadInitData"
 
         x = requests.post(url_load_init_data, data={'ssid': sid},
-                          headers={'host': 'start.bizon365.ru', 'cookie': f'sid={sid}'})
+                          headers={'host': url.split('/')[2], 'cookie': f'sid={sid}', 'X-Requested-With': 'XMLHttpRequest'})
         return InitData(x.text)
 
     def get_sid_for_link(self, sid, init_data: InitData):
