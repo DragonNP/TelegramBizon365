@@ -1,26 +1,27 @@
 import requests
 import json
+
+from database.webinars import Webinars as DB_Webinars
 from Bizon.initData import InitData
 from Bizon.room import Room
 from Bizon.webinar import Webinar
 
 
 class Bizon:
-    def get_webinar(self, url):
-        room = self.get_room(url)
-        webinar = Webinar()
-        webinar.create(room)
-        return webinar
-
-    def get_room(self, url):
+    def get_webinar(self, db: DB_Webinars, url):
         url = url.split('?')[0]
-
         sid = self.get_sid(url)
         init_data: InitData = self.load_init_data(url, sid)
+
+        if db.check(init_data.room_id):
+            return db.get(init_data.room_id)
+
         sid_special = self.get_sid_for_link(sid, init_data)
         room: Room = self.get_ws5_bizon(init_data, sid_special)
-
-        return room
+        webinar = Webinar()
+        webinar.create(room)
+        db.add_webinar(webinar)
+        return webinar
 
     def get_sid(self, url):
         if url[len(url) - 1] != '/':
@@ -52,7 +53,8 @@ class Bizon:
         url_load_init_data = url + "/loadInitData"
 
         x = requests.post(url_load_init_data, data={'ssid': sid},
-                          headers={'host': url.split('/')[2], 'cookie': f'sid={sid}', 'X-Requested-With': 'XMLHttpRequest'})
+                          headers={'host': url.split('/')[2], 'cookie': f'sid={sid}',
+                                   'X-Requested-With': 'XMLHttpRequest'})
         return InitData(x.text)
 
     def get_sid_for_link(self, sid, init_data: InitData):

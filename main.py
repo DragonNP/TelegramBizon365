@@ -28,6 +28,7 @@ def reformat_webinar(webinar: Webinar, prime=False, user_id: str = ''):
         text += f'''*Автор:* {webinar.author}
 *Дата начала:* {webinar.date}
 *Cсылка:* {webinar.url}'''
+        text = text.replace('_', '\_')
     else:
         text += 'Доступ к полной информации о вебинаре вы можете купить у техподдержки:' \
                 f' телеграм t.me/dragon\_np или почта dragonnp@yandex.ru, не забудьте указать данный код: {user_id}'
@@ -69,28 +70,16 @@ def extract(update: Update, _: CallbackContext):
     user_id = update.message.from_user.id
     url = update.message.text
 
-    url_id = str(url.split('/')[4])
-    if len(url.split('/')) > 5:
-        url_number = str(url.split('/')[5]).split('?')[0]
-    else:
-        url_number = ''
-    webinar_id = url_id + ':' + url_number
-
     logger.info(f'Извлечение данных вебирана. пользователь:{user_id}')
 
-    if not webinars.check(webinar_id):
-        webinar: Webinar = bizon.Bizon().get_webinar(url)
-        webinars.add_webinar(webinar)
-    else:
-        webinar: Webinar = webinars.get(webinar_id)
-
+    webinar: Webinar = bizon.Bizon().get_webinar(webinars, url)
     prime = users.check_prime(user_id)
 
     text = reformat_webinar(webinar, prime, user_id=user_id)
     users.add_webinar(user_id, webinar.id)
     update.message.reply_text(text,
                               parse_mode=telegram.ParseMode.MARKDOWN, disable_web_page_preview=True,
-                              reply_markup=get_keyboard_webinar(webinar_id, prime=prime))
+                              reply_markup=get_keyboard_webinar(webinar.id, prime=prime))
 
 
 def send_my_webs(update: Update, _: CallbackContext):

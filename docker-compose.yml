@@ -1,0 +1,12 @@
+services:
+  telegram_bizon365:
+    build:
+      context: .
+    container_name: telegram_bizon365
+    hostname: telegram_bizon365
+    volumes:
+      - /home/nikita/docker-containers/bizon365:/data:rw
+    env_file:
+      - .env
+    stdin_open: true
+    restart: always
